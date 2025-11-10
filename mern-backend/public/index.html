@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemo Toxicity Predictor</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f4f7f6; color: #333; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { max-width: 900px; width: 100%; padding: 30px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07); }
+        h1 { text-align: center; color: #2c3e50; }
+        form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .form-section { border-top: 2px solid #eee; padding-top: 20px; grid-column: 1 / -1; }
+        .form-section h3 { margin-top: 0; color: #3498db; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-size: 0.9rem; font-weight: 600; color: #555; margin-bottom: 5px; }
+        .input-group input, .input-group select { font-size: 1rem; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .checkbox-group label { margin-bottom: 0; }
+        #predict-btn { grid-column: 1 / -1; font-size: 1.1rem; font-weight: 600; padding: 15px 20px; border: none; border-radius: 8px; cursor: pointer; background-color: #3498db; color: white; transition: all 0.2s ease; }
+        #predict-btn:disabled { background-color: #bdc3c7; }
+        .results-container { margin-top: 30px; text-align: left; animation: fadeIn 0.5s ease; }
+        .results-card { border: 2px solid #ccc; padding: 15px 20px; border-radius: 8px; background-color: #fafafa; }
+        .results-card h3 { font-size: 1.5rem; margin-top: 0; }
+        .prediction-high-risk { color: #d9534f; border-color: #d9534f; }
+        .prediction-low-risk { color: #5cb85c; border-color: #5cb85c; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Chemotherapy Toxicity Predictor</h1>
+
+        <form id="prediction-form">
+
+            <div class="form-section">
+                <h3>Patient Demographics</h3>
+            </div>
+            <div class="input-group">
+                <label for="age">Age</label>
+                <input type="number" id="age" value="65">
+            </div>
+            <div class="input-group">
+                <label for="sex">Sex</label>
+                <select id="sex">
+                    <option value="0">Male</option>
+                    <option value="1">Female</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="bmi">BMI</label>
+                <input type="number" step="0.1" id="bmi" value="19.7">
+            </div>
+            <div class="input-group">
+                <label for="smoking">Smoking Status</label>
+                <select id="smoking">
+                    <option value="Current">Current</option>
+                    <option value="Former">Former</option>
+                    <option value="Never" selected>Never</option>
+                </select>
+            </div>
+
+            <div class="form-section">
+                <h3>Cancer & Treatment Details</h3>
+            </div>
+            <div class="input-group">
+                <label for="cancer_type">Cancer Type</label>
+                <select id="cancer_type">
+                    <option value="Colon" selected>Colon</option>
+                    <option value="Leukemia">Leukemia</option>
+                    <option value="Lung">Lung</option>
+                    <option value="Lymphoma">Lymphoma</option>
+                    <option value="Other">Breast</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="tumor_stage">Tumor Stage</label>
+                <select id="tumor_stage">
+                    <option value="1">Stage I</option>
+                    <option value="2" selected>Stage II</option>
+                    <option value="3">Stage III</option>
+                    <option value="4">Stage IV</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="tumor_size">Tumor Size (cm)</label>
+                <input type="number" step="0.1" id="tumor_size" value="5.3">
+            </div>
+            <div class="input-group">
+                <label for="genetic_mutation">Genetic Mutation</label>
+                <select id="genetic_mutation">
+                    <option value="EGFR" selected>EGFR</option>
+                    <option value="KRAS">KRAS</option>
+                    <option value="TP53">TP53</option>
+                    <option value="Unknown">BRCA1</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="chemo_regimen">Chemo Regimen</label>
+                <select id="chemo_regimen">
+                    <option value="CHOP">CHOP</option>
+                    <option value="FOLFOX">FOLFOX</option>
+                    <option value="Gemcitabine">Gemcitabine</option>
+                    <option value="Unknown" selected>ABVD</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="dosage">Dosage (mg/m²)</label>
+                <input type="number" step="0.1" id="dosage" value="468.9">
+            </div>
+            <div class="input-group">
+                <label for="cycles">Cycles Completed</label>
+                <input type="number" id="cycles" value="6">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="metastasis" checked>
+                <label for="metastasis">Metastasis (Cancer has spread)</label>
+            </div>
+
+            <div class="form-section">
+                <h3>Patient Status</h3>
+            </div>
+            <div class="input-group">
+                <label for="tumor_response">Tumor Response</label>
+                <select id="tumor_response">
+                    <option value="0">Complete Response</option>
+                    <option value="1">Partial Response</option>
+                    <option value="2" selected>Stable Disease</option>
+                    <option value="3">Progressive Disease</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="survival">Overall Survival (Months)</label>
+                <input type="number" id="survival" value="45">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="neutropenia" checked>
+                <label for="neutropenia">Neutropenia (Low WBC)</label>
+            </div>
+
+            <button type="submit" id="predict-btn">Predict Toxicity</button>
+        </form>
+        <hr>
+<h3>Dosage Simulation</h3>
+<button id="simulate-btn" type="button">Simulate Dosage</button>
+<div id="simulation-results-container"></div>
+
+
+        <div id="results-container">
+            <!-- Prediction results will be injected here -->
+        </div>
+    </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ [INIT] DOM fully loaded. Starting script...");
+
+    // === 1️⃣ Grab Elements ===
+    const form = document.getElementById('prediction-form');
+    const predictBtn = document.getElementById('predict-btn');
+    const resultsContainer = document.getElementById('results-container');
+    const simulateBtn = document.getElementById('simulate-btn');
+    const simResultsContainer = document.getElementById('simulation-results-container');
+
+    console.log("[CHECK] Elements loaded:",
+        { form, predictBtn, resultsContainer, simulateBtn, simResultsContainer });
+
+    if (!form || !predictBtn || !resultsContainer || !simulateBtn || !simResultsContainer) {
+        console.error("❌ Missing required HTML elements. Check your IDs!");
+        return;
+    }
+
+    // === 2️⃣ Event Listeners ===
+    console.log("🟢 [INIT] Adding event listeners...");
+    form.addEventListener("submit", handlePredict);
+    simulateBtn.addEventListener("click", handleSimulation);
+
+    // === 3️⃣ Helper: Extract vitals ===
+    function getVitalsFromForm() {
+        console.log("[STEP] getVitalsFromForm() started...");
+        try {
+            const v = {};
+            for (let i = 0; i < 25; i++) v[`feature_${i}`] = 0.0;
+
+            v.feature_0 = parseFloat(document.getElementById("age").value) || 0;
+            v.feature_1 = parseFloat(document.getElementById("sex").value) || 0;
+            v.feature_2 = parseFloat(document.getElementById("bmi").value) || 0;
+            v.feature_3 = parseFloat(document.getElementById("tumor_stage").value) || 0;
+            v.feature_4 = parseFloat(document.getElementById("tumor_size").value) || 0;
+            v.feature_5 = document.getElementById("metastasis").checked ? 1 : 0;
+            v.feature_6 = parseFloat(document.getElementById("dosage").value) || 0;
+            v.feature_7 = parseFloat(document.getElementById("cycles").value) || 0;
+            v.feature_8 = document.getElementById("neutropenia").checked ? 1 : 0;
+            v.feature_9 = parseFloat(document.getElementById("tumor_response").value) || 0;
+            v.feature_10 = parseFloat(document.getElementById("survival").value) || 0;
+
+            const smoking = document.getElementById("smoking").value;
+            if (smoking === "Former") v.feature_11 = 1;
+            if (smoking === "Never") v.feature_12 = 1;
+
+            const cancer = document.getElementById("cancer_type").value;
+            if (cancer === "Colon") v.feature_13 = 1;
+            if (cancer === "Leukemia") v.feature_14 = 1;
+            if (cancer === "Lung") v.feature_15 = 1;
+            if (cancer === "Lymphoma") v.feature_16 = 1;
+
+            const mutation = document.getElementById("genetic_mutation").value;
+            if (mutation === "EGFR") v.feature_17 = 1;
+            if (mutation === "KRAS") v.feature_18 = 1;
+            if (mutation === "TP53") v.feature_19 = 1;
+            if (mutation === "Unknown") v.feature_20 = 1;
+
+            const regimen = document.getElementById("chemo_regimen").value;
+            if (regimen === "CHOP") v.feature_21 = 1;
+            if (regimen === "FOLFOX") v.feature_22 = 1;
+            if (regimen === "Gemcitabine") v.feature_23 = 1;
+            if (regimen === "Unknown") v.feature_24 = 1;
+
+            console.log("[OK] Vitals extracted:", v);
+            return v;
+        } catch (err) {
+            console.error("[ERROR] getVitalsFromForm failed:", err);
+            displayError(err);
+            return null;
+        }
+    }
+
+    // === 4️⃣ API Call ===
+    async function callApi(vitals) {
+        console.log("[STEP] callApi() started with vitals:", vitals);
+        const response = await fetch("/api/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(vitals)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("[OK] API response received:", data);
+        return data;
+    }
+
+    // === 5️⃣ Risk Classification ===
+    function getGradeInfo(prediction) {
+        console.log("[STEP] getGradeInfo() input:", prediction);
+        const score = parseFloat(prediction.confidence_score);
+        if (score > 60) return { text: "Grade 3–4 (Severe Risk)", class: "high" };
+        if (score > 25) return { text: "Grade 1–2 (Moderate Risk)", class: "moderate" };
+        return { text: "Grade 0 (Low Risk)", class: "low" };
+    }
+
+    // === 6️⃣ Handle Predict ===
+    async function handlePredict(e) {
+        e.preventDefault();
+        console.log("▶️ [PREDICT] handlePredict() started...");
+
+        resultsContainer.innerHTML = `<div class="loader">Loading prediction...</div>`;
+        predictBtn.disabled = true;
+        simulateBtn.disabled = true;
+
+        try {
+            const vitals = getVitalsFromForm();
+            if (!vitals) return;
+            const prediction = await callApi(vitals);
+            displayPrediction(prediction);
+        } catch (err) {
+            console.error("[ERROR] handlePredict failed:", err);
+            displayError(err);
+        } finally {
+            console.log("✅ [PREDICT] handlePredict() finished (finally)");
+            predictBtn.disabled = false;
+            simulateBtn.disabled = false;
+        }
+    }
+
+    // === 7️⃣ Handle Simulation ===
+    async function handleSimulation() {
+        console.log("▶️ [SIMULATE] handleSimulation() started...");
+        simResultsContainer.innerHTML = `<h2>Running Dosage Simulation...</h2><ul class="simulation-step-list"></ul>`;
+        resultsContainer.innerHTML = "";
+        predictBtn.disabled = true;
+        simulateBtn.disabled = true;
+
+        const list = simResultsContainer.querySelector(".simulation-step-list");
+        let vitals = getVitalsFromForm();
+        if (!vitals) return;
+        let dosage = vitals.feature_6;
+
+        try {
+            for (let i = 0; i < 10; i++) {
+                vitals.feature_6 = dosage;
+                console.log(`🔸 [SIM] Step ${i+1}: testing dosage = ${dosage}`);
+
+                const prediction = await callApi(vitals);
+                const grade = getGradeInfo(prediction);
+
+                const li = document.createElement("li");
+                li.className = `simulation-step ${grade.class}`;
+                li.innerHTML = `Dosage: <strong>${dosage.toFixed(1)} mg/m²</strong> → Risk: <strong>${grade.text}</strong>`;
+                list.appendChild(li);
+
+                if (grade.class === "low") {
+                    simResultsContainer.querySelector("h2").textContent = "✅ Optimal Dosage Found!";
+                    break;
+                }
+                dosage *= 0.9;
+            }
+        } catch (err) {
+            console.error("[ERROR] handleSimulation failed:", err);
+            displayError(err, simResultsContainer);
+        } finally {
+            console.log("✅ [SIMULATE] handleSimulation() finished (finally)");
+            predictBtn.disabled = false;
+            simulateBtn.disabled = false;
+        }
+    }
+
+    // === 8️⃣ Display Helpers ===
+    function displayPrediction(prediction) {
+        console.log("[STEP] displayPrediction() input:", prediction);
+        const grade = getGradeInfo(prediction);
+        resultsContainer.innerHTML = `
+            <h2>Prediction Result:</h2>
+            <div class="results-card ${grade.class}">
+                <h3>${grade.text}</h3>
+                <p>Model's Confidence: <strong>${prediction.confidence_score}%</strong></p>
+            </div>
+        `;
+    }
+
+    function displayError(error, container = resultsContainer) {
+        console.error("[DISPLAY ERROR]", error);
+        container.innerHTML = `
+            <div class="results-card high">
+                <h3>Error</h3>
+                <p>Could not get prediction. Is the server running?</p>
+                <small>${error.message}</small>
+            </div>
+        `;
+    }
+});
+</script>
+
+
+
+</body>
+</html>
