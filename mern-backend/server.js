@@ -1,10 +1,4 @@
-// ==============================================================================
 // NODE.JS (EXPRESS) API SERVER
-//
-// This file is ALREADY CORRECT. No changes are needed.
-// It serves your new 'index.html' file and
-// handles the '/api/predict' requests.
-// ==============================================================================
 
 const express = require('express');
 const axios = require('axios');
