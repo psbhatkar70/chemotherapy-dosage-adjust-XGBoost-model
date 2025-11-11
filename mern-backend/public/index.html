@@ -93,6 +93,7 @@
                     <option value="KRAS">KRAS</option>
                     <option value="TP53">TP53</option>
                     <option value="Unknown">BRCA1</option>
+                    <option value="none" selected>NONE</option>
                 </select>
             </div>
             <div class="input-group">
@@ -102,6 +103,7 @@
                     <option value="FOLFOX">FOLFOX</option>
                     <option value="Gemcitabine">Gemcitabine</option>
                     <option value="Unknown" selected>ABVD</option>
+                    <option value="none" selected>NONE</option>
                 </select>
             </div>
             <div class="input-group">
@@ -326,7 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <h2>Prediction Result:</h2>
             <div class="results-card ${grade.class}">
                 <h3>${grade.text}</h3>
-                <p>Model's Confidence: <strong>${prediction.confidence_score}%</strong></p>
+<!--                <p>Model's Confidence: <strong>${prediction.confidence_score}%</strong></p>-->
             </div>
         `;
     }
