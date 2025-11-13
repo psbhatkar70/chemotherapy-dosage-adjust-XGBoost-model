@@ -2,6 +2,7 @@
 import joblib
 import pandas as pd
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Dict, Any
 
@@ -9,6 +10,14 @@ app = FastAPI(
     title="Chemotherapy Toxicity Predictor API",
     description="Serves a binary (0/1) prediction model for severe toxicity events.",
     version="1.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (easiest for now)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
 )
 
 
